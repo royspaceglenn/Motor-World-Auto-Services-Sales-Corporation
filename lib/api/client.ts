@@ -189,6 +189,8 @@ export function setStoredToken(token: string) {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
+const DEFAULT_REQUEST_TIMEOUT_MS = 28_000;
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers || {});
   if (!headers.has('Content-Type') && options.body) headers.set('Content-Type', 'application/json');
@@ -197,11 +199,16 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const url = `${getApiBase()}${path}`;
   let response: Response;
+  let clearTimer: (() => void) | undefined;
+  const init: RequestInit = { ...options, headers };
+  if (!options.signal) {
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), DEFAULT_REQUEST_TIMEOUT_MS);
+    clearTimer = () => clearTimeout(t);
+    init.signal = c.signal;
+  }
   try {
-    response = await fetch(url, {
-      ...options,
-      headers,
-    });
+    response = await fetch(url, init);
   } catch (e) {
     const hint =
       typeof window !== 'undefined' &&
@@ -209,7 +216,17 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
         ? ' From the project folder run `npm run dev` so the API is on port 3001 and Vite proxies /api.'
         : '';
     const msg = e instanceof Error ? e.message : String(e);
+    const timedOut = e instanceof Error && (e.name === 'AbortError' || msg.includes('aborted'));
+    if (timedOut) {
+      throw new HttpError(
+        0,
+        `Request timed out after ${DEFAULT_REQUEST_TIMEOUT_MS / 1000}s (${url || path}). ` +
+          'The API may be cold-starting on Vercel, unreachable, or blocked by the network. Try again in a moment.'
+      );
+    }
     throw new HttpError(0, `Cannot reach the server (${url || path}). ${msg}${hint}`);
+  } finally {
+    clearTimer?.();
   }
 
   const text = await response.text();

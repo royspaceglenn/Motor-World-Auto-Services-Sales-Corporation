@@ -22,8 +22,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
-    const maxAttempts = 40;
-    const delayMs = 300;
+    const maxAttempts = 6;
+    const delayMs = 400;
     for (let i = 0; i < maxAttempts; i++) {
       try {
         const response = await authApi.me();
