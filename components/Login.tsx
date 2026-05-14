@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../lib/auth/AuthContext';
 import { DEFAULT_REST_ADMIN_EMAIL } from '../lib/auth/adminLogin';
 import { USE_FIRESTORE_ADMIN_DATA } from '../lib/api/adminData';
@@ -30,7 +30,17 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [slowHint, setSlowHint] = useState(false);
   const serverLine = useMemo(() => remoteApiDisplayLine(), []);
+
+  useEffect(() => {
+    if (!loading) {
+      setSlowHint(false);
+      return;
+    }
+    const t = window.setTimeout(() => setSlowHint(true), 4000);
+    return () => window.clearTimeout(t);
+  }, [loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,10 +50,15 @@ export const Login: React.FC = () => {
       return;
     }
     setLoading(true);
-    const result = await login(username.trim(), password);
-    setLoading(false);
-    if (result.success) return;
-    setError(result.error ?? 'Login failed.');
+    try {
+      const result = await login(username.trim(), password);
+      if (result.success) return;
+      setError(result.error ?? 'Login failed.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -158,6 +173,13 @@ export const Login: React.FC = () => {
               <Button type="submit" fullWidth disabled={loading}>
                 {loading ? 'Signing in...' : 'Sign in'}
               </Button>
+              {loading && slowHint && (
+                <p className="text-center text-xs leading-relaxed text-slate-500">
+                  Still reaching the server. On Vercel the first sign-in after idle can take up to about a minute
+                  while the API and database wake up. If your email and password are correct, you should get in—or see
+                  an error when the wait limit is reached.
+                </p>
+              )}
             </form>
 
             <div className="mt-8 border-t border-slate-100 pt-6">
