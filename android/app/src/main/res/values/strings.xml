@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">EFCP Viewer</string>
+    <string name="title_activity_main">EFCP Viewer</string>
+    <string name="package_name">com.efcp.motorparts.viewer</string>
+    <string name="custom_url_scheme">com.efcp.motorparts.viewer</string>
+</resources>

@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-viewer
+dist-ssr
+*.local
+
+# Secrets — never commit
+.env
+server/.env
+.env.*.local
+*-firebase-adminsdk-*.json
+
+# Local DB files (do not commit live shop data)
+server/data/*.sqlite
+server/data/*.sqlite-*
+
+# Packaged desktop builds (large)
+release/
+
+# Baked into installers for your org (do not commit real URLs)
+electron/bundled-api.json
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

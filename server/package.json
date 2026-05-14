@@ -1,0 +1,22 @@
+{
+  "name": "efcp-sqlite-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node index.js",
+    "check": "node --check index.js && node --check app.js",
+    "postinstall": "node ../scripts/ensure-server-sqlite.mjs",
+    "rebuild:sqlite": "node ../scripts/ensure-server-sqlite.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "firebase-admin": "^13.6.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.20.0"
+  }
+}

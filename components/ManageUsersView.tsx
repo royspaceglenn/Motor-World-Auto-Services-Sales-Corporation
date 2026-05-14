@@ -1,0 +1,278 @@
+import React, { useEffect, useState } from 'react';
+import { usersApi, type ApiUser } from '../lib/api/adminData';
+import { UserPlus, Trash2, Users, KeyRound } from 'lucide-react';
+
+export const ManageUsersView: React.FC = () => {
+  const [users, setUsers] = useState<ApiUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formEmail, setFormEmail] = useState('');
+  const [formPassword, setFormPassword] = useState('');
+  const [formDisplayName, setFormDisplayName] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [resetUser, setResetUser] = useState<ApiUser | null>(null);
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetConfirm, setResetConfirm] = useState('');
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
+
+  const load = () => {
+    setLoading(true);
+    usersApi
+      .list()
+      .then((res) => setUsers(res.users))
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    if (!formEmail.trim() || !formPassword || !formDisplayName.trim()) {
+      setFormError('Email, password, and display name required.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await usersApi.create(formEmail.trim(), formPassword, formDisplayName.trim());
+      setFormEmail('');
+      setFormPassword('');
+      setFormDisplayName('');
+      setShowForm(false);
+      load();
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Failed to create');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Remove this admin account? This cannot be undone.')) return;
+    try {
+      await usersApi.delete(id);
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete');
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetUser) return;
+    setResetError(null);
+    if (resetPassword.length < 8) {
+      setResetError('Password must be at least 8 characters.');
+      return;
+    }
+    if (resetPassword !== resetConfirm) {
+      setResetError('Passwords do not match.');
+      return;
+    }
+    setResetting(true);
+    try {
+      await usersApi.update(resetUser.id, { password: resetPassword });
+      setResetUser(null);
+      setResetPassword('');
+      setResetConfirm('');
+      load();
+    } catch (err) {
+      setResetError(err instanceof Error ? err.message : 'Failed to reset password.');
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  const accounts = users;
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-slate-800">Manage Admin Accounts</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Each person can have their own account. Administrators can reset another user&apos;s password here;
+            everyone can change their own password from the sidebar.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-medium"
+        >
+          <UserPlus className="w-4 h-4" />
+          Add Admin
+        </button>
+      </div>
+
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+          {error}
+        </div>
+      )}
+
+      {showForm && (
+        <form onSubmit={handleCreate} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+          <h3 className="font-semibold text-slate-800">New Admin</h3>
+          {formError && (
+            <p className="text-sm text-red-600">{formError}</p>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+            <input
+              type="email"
+              value={formEmail}
+              onChange={(e) => setFormEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              placeholder="admin@example.com"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+            <input
+              type="password"
+              value={formPassword}
+              onChange={(e) => setFormPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              placeholder="••••••••"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Display Name</label>
+            <input
+              type="text"
+              value={formDisplayName}
+              onChange={(e) => setFormDisplayName(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              placeholder="e.g. Admin Isulan"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {submitting ? 'Creating...' : 'Create'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex items-center gap-2 text-slate-600">
+          <Users className="w-5 h-5" />
+          <span className="font-medium">Accounts</span>
+        </div>
+        {loading ? (
+          <p className="p-6 text-slate-500">Loading...</p>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {accounts.map((u) => (
+              <li key={u.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-medium text-slate-800">{u.displayName}</p>
+                  <p className="text-sm text-slate-500">{u.email}</p>
+                  <span className="mt-1 inline-flex rounded px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
+                    Administrator
+                  </span>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetUser(u);
+                      setResetPassword('');
+                      setResetConfirm('');
+                      setResetError(null);
+                    }}
+                    className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    title="Set new password"
+                  >
+                    <KeyRound className="h-4 w-4" />
+                    Set password
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(u.id)}
+                    className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                    title="Delete account"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </li>
+            ))}
+            {accounts.length === 0 && (
+              <li className="p-8 text-center text-slate-400">No accounts yet.</li>
+            )}
+          </ul>
+        )}
+      </div>
+
+      {resetUser && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 p-4">
+          <form
+            onSubmit={handlePasswordReset}
+            className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
+          >
+            <h3 className="font-semibold text-slate-900">Set password for {resetUser.displayName}</h3>
+            <p className="mt-1 text-sm text-slate-600">{resetUser.email}</p>
+            {resetError && <p className="mt-3 text-sm text-red-600">{resetError}</p>}
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">New password</label>
+                <input
+                  type="password"
+                  value={resetPassword}
+                  onChange={(e) => setResetPassword(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                  autoComplete="new-password"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Confirm</label>
+                <input
+                  type="password"
+                  value={resetConfirm}
+                  onChange={(e) => setResetConfirm(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                  autoComplete="new-password"
+                />
+              </div>
+            </div>
+            <div className="mt-5 flex gap-2">
+              <button
+                type="submit"
+                disabled={resetting}
+                className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {resetting ? 'Saving…' : 'Save password'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setResetUser(null)}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+};

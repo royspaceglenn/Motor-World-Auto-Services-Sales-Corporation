@@ -1,0 +1,82 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function staff() {
+      return signedIn()
+        && (request.auth.token.role == 'admin' || request.auth.token.role == 'overseer');
+    }
+
+    match /config/viewer {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /shops/{shopId}/viewer/{docId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      allow read: if staff();
+      allow write: if false;
+    }
+
+    match /shops/{shopId}/items/{itemId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/transactions/{transactionId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/persons/{personId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/vehicles/{vehicleId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/expenses/{expenseId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/suppliers/{supplierId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/purchases/{purchaseId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/soas/{soaId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/soaPayments/{paymentId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/loans/{loanId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/loanPayments/{paymentId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/notifications/{notificationId} {
+      allow read, write: if staff();
+    }
+
+    match /shops/{shopId}/activityLogs/{logId} {
+      allow read: if staff();
+      allow write: if false;
+    }
+  }
+}
