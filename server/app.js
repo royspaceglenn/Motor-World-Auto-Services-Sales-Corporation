@@ -18,6 +18,8 @@ import suppliersRoutes from './routes/suppliers.js';
 import purchasesRoutes from './routes/purchases.js';
 import paymentJournalRoutes from './routes/paymentJournal.js';
 import documentArchivesRoutes from './routes/documentArchives.js';
+import { warmDatabaseConnection } from './db/collectionsBackend.js';
+import { ensureStoreInitialized } from './db/store.js';
 
 dotenv.config();
 
@@ -55,6 +57,29 @@ app.use(
 app.use(cors(buildCorsOptions()));
 app.use(express.json());
 
+/** Fast path for probes — no store init. */
+app.get('/api/health', (req, res) => res.json({ ok: true }));
+
+/** Neon / Postgres keep-warm (Vercel Cron). No full store seed — only connect + SELECT 1. */
+app.get('/api/system/warm', async (req, res) => {
+  try {
+    await warmDatabaseConnection();
+    return res.json({ ok: true });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return res.status(500).json({ ok: false, error: msg });
+  }
+});
+
+app.use(async (req, res, next) => {
+  try {
+    await ensureStoreInitialized();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authMiddleware, usersRoutes);
 app.use('/api/activity', authMiddleware, activityRoutes);
@@ -70,10 +95,6 @@ app.use('/api/suppliers', authMiddleware, suppliersRoutes);
 app.use('/api/purchases', authMiddleware, purchasesRoutes);
 app.use('/api/payment-journal', authMiddleware, paymentJournalRoutes);
 app.use('/api/document-archives', authMiddleware, documentArchivesRoutes);
-
-app.get('/api/health', (req, res) => {
-  res.json({ ok: true });
-});
 
 // Global error handler so 500 responses return JSON with error message
 app.use((err, req, res, next) => {

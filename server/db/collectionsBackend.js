@@ -76,7 +76,8 @@ async function initPostgres() {
     connectionString,
     max: onVercel ? 2 : 10,
     idleTimeoutMillis: onVercel ? 20_000 : 30_000,
-    connectionTimeoutMillis: onVercel ? 25_000 : 0,
+    /** Fail fast on bad host / firewall so the client is not stuck for the full HTTP timeout. */
+    connectionTimeoutMillis: onVercel ? 20_000 : 0,
   });
   await pgPool.query(`
     CREATE TABLE IF NOT EXISTS collections (
@@ -105,6 +106,14 @@ export async function initCollectionsBackend() {
 
   mode = 'sqlite';
   initSqlite();
+}
+
+/** Light DB touch for cron / warmup (connect + SELECT 1). Does not seed collections. */
+export async function warmDatabaseConnection() {
+  await initCollectionsBackend();
+  if (mode === 'postgres' && pgPool) {
+    await pgPool.query('SELECT 1');
+  }
 }
 
 export async function closeCollectionsBackend() {
@@ -175,12 +184,14 @@ export async function writeCollection(name, value) {
 
 export async function seedEmptyCollections(collectionNames) {
   await initCollectionsBackend();
-  for (const name of collectionNames) {
-    const row = await getCollectionRow(name);
-    if (!row) {
-      const legacyFile = LEGACY_IMPORTS[name];
-      const initialValue = legacyFile ? readJsonSafe(path.join(dataDir, legacyFile), []) : [];
-      await upsertCollection(name, initialValue);
-    }
-  }
+  await Promise.all(
+    collectionNames.map(async (name) => {
+      const row = await getCollectionRow(name);
+      if (!row) {
+        const legacyFile = LEGACY_IMPORTS[name];
+        const initialValue = legacyFile ? readJsonSafe(path.join(dataDir, legacyFile), []) : [];
+        await upsertCollection(name, initialValue);
+      }
+    })
+  );
 }

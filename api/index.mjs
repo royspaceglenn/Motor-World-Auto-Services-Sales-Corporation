@@ -1,6 +1,6 @@
 /**
  * Vercel serverless entry: runs the Express app so /api/* works on the same host as the Vite static build.
- * On Vercel, DATABASE_URL (Postgres) is required — SQLite cannot write under /var/task.
+ * Store init runs on first real API request (see server/app.js), not here — so cold login is not blocked on full seed before the HTTP handler exists.
  */
 import dotenv from 'dotenv';
 import serverless from 'serverless-http';
@@ -24,11 +24,7 @@ export default async function vercelApi(req, res) {
       assertVercelHasPostgres();
       const { assertProductionSafe } = await import('../server/lib/productionEnv.js');
       assertProductionSafe();
-      const [{ initializeStore }, { default: app }] = await Promise.all([
-        import('../server/db/store.js'),
-        import('../server/app.js'),
-      ]);
-      await initializeStore();
+      const { default: app } = await import('../server/app.js');
       handler = serverless(app);
     }
     return handler(req, res);

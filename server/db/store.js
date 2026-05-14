@@ -32,6 +32,8 @@ export const COLLECTIONS = {
 };
 
 let initialized = false;
+/** Dedupe concurrent first-request inits (e.g. Vercel serverless). */
+let storeInitPromise = null;
 
 /** Single administrator row; migrates legacy `admin` / `admin@efcp.com` / older aliases to {@link DEFAULT_REST_ADMIN_EMAIL}. */
 function consolidateUsersToSingleAdmin(users) {
@@ -87,11 +89,25 @@ function consolidateUsersToSingleAdmin(users) {
   ];
 }
 
+export async function ensureStoreInitialized() {
+  if (initialized) return;
+  if (!storeInitPromise) {
+    storeInitPromise = initializeStore().catch((err) => {
+      storeInitPromise = null;
+      throw err;
+    });
+  }
+  await storeInitPromise;
+}
+
 export async function initializeStore() {
   if (initialized) return;
-  await collectionsBackend.seedEmptyCollections(Object.values(COLLECTIONS));
+  /** Seed `users` first so login can succeed after minimal round-trips; then remaining tables in parallel. */
+  await collectionsBackend.seedEmptyCollections([COLLECTIONS.users]);
   const users = await collectionsBackend.readCollection(COLLECTIONS.users, []);
   await collectionsBackend.writeCollection(COLLECTIONS.users, consolidateUsersToSingleAdmin(users));
+  const rest = Object.values(COLLECTIONS).filter((n) => n !== COLLECTIONS.users);
+  await collectionsBackend.seedEmptyCollections(rest);
   initialized = true;
 }
 
