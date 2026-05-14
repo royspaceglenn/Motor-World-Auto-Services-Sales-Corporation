@@ -39,3 +39,5 @@ electron/bundled-api.json
 *.njsproj
 *.sln
 *.sw?
+
+.vercel

@@ -1,0 +1,9 @@
+node_modules
+server/node_modules
+release
+dist
+dist-viewer
+flutter_viewer/build
+flutter_viewer/.dart_tool
+android/app/build
+.git
