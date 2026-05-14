@@ -21,7 +21,7 @@ import documentArchivesRoutes from './routes/documentArchives.js';
 import { warmDatabaseConnection } from './db/collectionsBackend.js';
 import { ensureStoreInitialized } from './db/store.js';
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 function buildCorsOptions() {
   const raw = String(process.env.CORS_ORIGINS || '').trim();
@@ -61,7 +61,7 @@ app.use(express.json());
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 /** Neon / Postgres keep-warm (Vercel Cron). No full store seed — only connect + SELECT 1. */
-app.get('/api/system/warm', async (req, res) => {
+async function handleDbWarm(req, res) {
   try {
     await warmDatabaseConnection();
     return res.json({ ok: true });
@@ -69,7 +69,10 @@ app.get('/api/system/warm', async (req, res) => {
     const msg = e instanceof Error ? e.message : String(e);
     return res.status(500).json({ ok: false, error: msg });
   }
-});
+}
+app.get('/api/system/warm', handleDbWarm);
+/** Alias: common typo / old cron path — must not fall through to store init (would cold-timeout). */
+app.get('/api/system/warn', handleDbWarm);
 
 app.use(async (req, res, next) => {
   try {

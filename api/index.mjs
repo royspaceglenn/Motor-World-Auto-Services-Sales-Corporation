@@ -5,7 +5,7 @@
 import dotenv from 'dotenv';
 import serverless from 'serverless-http';
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 let handler;
 

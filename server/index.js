@@ -9,7 +9,7 @@ import { assertProductionSafe } from './lib/productionEnv.js';
 let serverInstance = null;
 
 export async function startServer(options = {}) {
-  dotenv.config();
+  dotenv.config({ quiet: true });
   assertProductionSafe();
 
   if (serverInstance) {
