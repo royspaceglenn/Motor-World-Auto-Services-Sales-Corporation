@@ -5,7 +5,6 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { DatabaseSync } from 'node:sqlite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,7 +28,7 @@ const LEGACY_IMPORTS = {
 };
 
 let mode = 'sqlite';
-/** @type {DatabaseSync | null} */
+/** @type {import('node:sqlite').DatabaseSync | null} */
 let sqliteDb = null;
 /** @type {import('pg').Pool | null} */
 let pgPool = null;
@@ -49,13 +48,14 @@ function readJsonSafe(filePath, fallback = []) {
   }
 }
 
-function initSqlite() {
+async function initSqlite() {
   if (String(process.env.VERCEL || '').trim() === '1') {
     throw new Error(
       '[motor-world] SQLite is not supported on Vercel (read-only deployment disk). Set DATABASE_URL to PostgreSQL (e.g. Neon or Supabase).'
     );
   }
   ensureDataDir();
+  const { DatabaseSync } = await import('node:sqlite');
   sqliteDb = new DatabaseSync(dbPath);
   sqliteDb.exec('PRAGMA journal_mode = WAL');
   sqliteDb.exec('PRAGMA foreign_keys = ON');
@@ -105,7 +105,7 @@ export async function initCollectionsBackend() {
   }
 
   mode = 'sqlite';
-  initSqlite();
+  await initSqlite();
 }
 
 /** Light DB touch for cron / warmup (connect + SELECT 1). Does not seed collections. */
