@@ -50,6 +50,11 @@ function readJsonSafe(filePath, fallback = []) {
 }
 
 function initSqlite() {
+  if (String(process.env.VERCEL || '').trim() === '1') {
+    throw new Error(
+      '[motor-world] SQLite is not supported on Vercel (read-only deployment disk). Set DATABASE_URL to PostgreSQL (e.g. Neon or Supabase).'
+    );
+  }
   ensureDataDir();
   sqliteDb = new DatabaseSync(dbPath);
   sqliteDb.exec('PRAGMA journal_mode = WAL');
