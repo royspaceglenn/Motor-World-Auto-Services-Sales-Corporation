@@ -151,7 +151,7 @@ function printSalesSummary(
 </style></head><body>
   <div class="header">
     <div>
-      <div class="co">EFCP MOTOR PARTS AND TRADING</div>
+      <div class="co">MOTOR WORLD AUTO SERVICES & SALES CORPORATION</div>
       <div class="addr">Sales deposit report — matches Motor World–style layout. Customer and sale reference on each line.</div>
     </div>
     <div class="period">

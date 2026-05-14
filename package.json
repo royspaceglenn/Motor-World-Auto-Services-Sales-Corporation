@@ -1,7 +1,7 @@
 {
-  "name": "efcp-motor-parts-and-trading",
-  "description": "EFCP Motor Parts and Trading — inventory, purchasing, POS, receivables, and operations.",
-  "author": "EFCP",
+  "name": "motor-world-auto-services-sales",
+  "description": "Motor World Auto Services & Sales Corporation — inventory, purchasing, POS, receivables, and operations.",
+  "author": "Motor World Auto Services & Sales Corporation",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -66,8 +66,8 @@
     "wait-on": "^9.0.10"
   },
   "build": {
-    "appId": "com.efcp.desktop",
-    "productName": "EFCP Motor Parts and Trading",
+    "appId": "com.motorworld.desktop",
+    "productName": "Motor World Auto Services & Sales Corporation",
     "directories": {
       "output": "release"
     },
@@ -87,7 +87,7 @@
       "server/**/*"
     ],
     "win": {
-      "executableName": "EFCP-MotorParts",
+      "executableName": "MotorWorld-AutoServices",
       "target": [
         "nsis"
       ],

@@ -1,4 +1,4 @@
-# EFCP Motor Parts and Trading — System Overview
+# Motor World Auto Services & Sales Corporation — System Overview
 
 **Category:** All-in-One Business & Operations System  
 *(Unified system for sales, inventory, customers, transactions, credit, and operations — not labeled as POS.)*
@@ -10,7 +10,7 @@ This document lists all current functionalities so they are preserved during any
 ## 1. Authentication & Users
 
 - Login (email + password); JWT-based auth
-- Roles: **Overseer** (EFCP Motor Parts) and **Admin**
+- Roles: **Overseer** (Motor World operations) and **Admin**
 - Demo credentials shown on login form; migration for canonical emails (overseer@ecfp.com, admin1@ecfp.com, admin2@ecfp.com)
 - Manage Users (Overseer only): list users, create admin, delete admin
 - Session expiry handling and logout

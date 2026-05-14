@@ -33,11 +33,13 @@ export const COLLECTIONS = {
 
 let initialized = false;
 
-/** Single administrator row; migrates legacy `admin` / `admin@efcp.com` to {@link DEFAULT_REST_ADMIN_EMAIL}. */
+/** Single administrator row; migrates legacy `admin` / `admin@efcp.com` / older aliases to {@link DEFAULT_REST_ADMIN_EMAIL}. */
 function consolidateUsersToSingleAdmin(users) {
   const canonicalEmail = String(DEFAULT_REST_ADMIN_EMAIL).trim().toLowerCase();
   const legacyEmails = new Set(
-    [SINGLE_ADMIN_USERNAME, 'admin@efcp.com', FIREBASE_SIGNIN_EMAIL].map((x) => String(x).toLowerCase())
+    [SINGLE_ADMIN_USERNAME, 'admin@efcp.com', 'admin@motorworldcorp.com', FIREBASE_SIGNIN_EMAIL].map((x) =>
+      String(x).toLowerCase(),
+    ),
   );
   const normalized = (u) => String(u.email || '').trim().toLowerCase();
 

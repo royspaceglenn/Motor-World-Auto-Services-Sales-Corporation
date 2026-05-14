@@ -36,13 +36,13 @@ runNpm(['run', 'rebuild:server-sqlite'], root);
 console.log(`
 Setup finished.
 
-Next (run only from the folder that already contains package.json — e.g. "sir Pedit\\\\efcp"):
+Next (run only from the folder that already contains package.json — the app repo root):
   npm run desktop:start
 
-Do not run "cd efcp" if you are already inside the efcp folder (that would look for efcp\\\\efcp and fail).
+Do not run a second `cd` into a duplicate nested folder; stay in the directory where `package.json` lives.
 
 If the UI looks like an old build (wrong login text):
-  - Use this dev command, not release\\\\win-unpacked\\\\EFCP-MotorParts.exe (that exe uses last "npm run build" output).
+  - Use this dev command, not release\\\\win-unpacked\\\\MotorWorld-AutoServices.exe (that exe uses last "npm run build" output).
   - Or run: npm run cache:clean   then   npm run desktop:start
 `);
 

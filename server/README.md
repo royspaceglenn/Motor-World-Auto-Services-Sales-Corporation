@@ -1,6 +1,6 @@
-# EFCP Motor Parts and Trading — Backend
+# Motor World Auto Services & Sales Corporation — Backend
 
-Express API for the **EFCP Motor Parts and Trading** admin desktop and browser app.
+Express API for the **Motor World Auto Services & Sales Corporation** admin desktop and browser app.
 
 The server is now the primary admin backend again:
 
@@ -18,13 +18,13 @@ copy .env.example .env
 npm run dev
 ```
 
-The SQLite database is created automatically at `server/data/efcp.sqlite` unless `SQLITE_DB_PATH` is set.
+The SQLite database is created automatically at `server/data/motorworld.sqlite` (new installs). If `server/data/efcp.sqlite` exists from an older build, that file is used until you migrate or set `SQLITE_DB_PATH`.
 
 ## PostgreSQL (Neon / cloud, optional)
 
 Set `DATABASE_URL` in `.env` to a Postgres connection string (Neon, Supabase, Railway, etc.). On first start the server creates a `collections` table and stores the same JSON blobs as SQLite, so **no separate migration tool** is required for a new empty cloud database.
 
-Unset `DATABASE_URL` to use local SQLite again. To **move an existing** `efcp.sqlite` shop into Postgres, export the `collections` rows (or re-seed) — ask if you need a one-off export script.
+Unset `DATABASE_URL` to use local SQLite again. To **move an existing** SQLite shop into Postgres, export the `collections` rows (or re-seed) — ask if you need a one-off export script.
 
 ## Authentication (browser / network exposure)
 
@@ -69,6 +69,8 @@ Typing **`admin`** still signs you in (it maps to the email above). **Change thi
 
 When the Electron desktop app runs, it also creates a local sync settings file in the app data folder:
 
-- `%LOCALAPPDATA%/EFCP Motor Parts and Trading/sync-settings.json`
+- `%LOCALAPPDATA%/Motor World Auto Services & Sales Corporation/sync-settings.json`
+
+(If you never ran the rebranded desktop build, the same file may still be under `%LOCALAPPDATA%/EFCP Motor Parts and Trading/`.)
 
 Use that file to enable Firebase mirror sync for the viewer. The desktop app keeps working offline; when the PC regains internet access, the background sync loop retries publishing viewer data to Firestore.

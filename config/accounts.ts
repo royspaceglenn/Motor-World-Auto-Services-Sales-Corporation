@@ -59,7 +59,7 @@ const DEMO_PASSWORDS: Record<AccountId, string> = {
 
 /** Demo credentials for display on the login screen. */
 export const DEMO_ACCOUNTS: { account: string; password: string; role: string }[] = [
-  { account: 'Provincial Logistics Monitoring System', password: DEMO_PASSWORD, role: 'View only (EFCP Motor Parts and Trading)' },
+  { account: 'Provincial Logistics Monitoring System', password: DEMO_PASSWORD, role: 'View only (Motor World Auto Services & Sales Corporation)' },
   { account: 'Isulan Logistics Monitoring System', password: DEMO_PASSWORD, role: 'Full access (Clerk)' },
   { account: 'Tacurong Logistics Monitoring System', password: DEMO_PASSWORD, role: 'Full access (Clerk)' },
 ];

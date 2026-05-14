@@ -19,7 +19,7 @@ export class RootErrorBoundary extends Component<Props, State> {
       const { message, stack } = this.state.error;
       return (
         <div className="min-h-screen bg-slate-100 p-6 text-slate-900">
-          <h1 className="text-xl font-semibold text-red-700">EFCP Motor Parts and Trading — display error</h1>
+          <h1 className="text-xl font-semibold text-red-700">Motor World Auto Services & Sales Corporation — display error</h1>
           <p className="mt-2 text-sm text-slate-600">
             The app hit a JavaScript error. Use <strong>View → Toggle Developer Tools</strong> (desktop) for full logs, or reload
             below.

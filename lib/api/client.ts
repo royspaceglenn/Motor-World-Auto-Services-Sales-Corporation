@@ -12,6 +12,12 @@ import type {
 
 declare global {
   interface Window {
+    motorWorldDesktop?: {
+      apiBaseUrl?: string;
+      isDesktopApp?: boolean;
+      openViewer?: () => Promise<void>;
+    };
+    /** Legacy preload bridge (pre–Motor World installers). */
     efcpDesktop?: {
       apiBaseUrl?: string;
       isDesktopApp?: boolean;
@@ -20,7 +26,8 @@ declare global {
   }
 }
 
-const TOKEN_KEY = 'efcp_auth_token';
+const TOKEN_KEY = 'motorworld_auth_token';
+const TOKEN_KEY_LEGACY = 'efcp_auth_token';
 
 /** Thrown by {@link request} when the server returns a non-2xx status (includes 401). */
 export class HttpError extends Error {
@@ -32,7 +39,10 @@ export class HttpError extends Error {
     this.status = status;
   }
 }
-const runtimeApiBase = typeof window !== 'undefined' ? window.efcpDesktop?.apiBaseUrl ?? '' : '';
+const runtimeApiBase =
+  typeof window !== 'undefined'
+    ? window.motorWorldDesktop?.apiBaseUrl ?? window.efcpDesktop?.apiBaseUrl ?? ''
+    : '';
 
 function getApiBase(): string {
   let base = (runtimeApiBase || import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
@@ -162,7 +172,15 @@ export interface DocumentArchiveEntry {
 
 function getStoredToken() {
   if (typeof window === 'undefined') return '';
-  return localStorage.getItem(TOKEN_KEY) || '';
+  const next = localStorage.getItem(TOKEN_KEY);
+  if (next) return next;
+  const legacy = localStorage.getItem(TOKEN_KEY_LEGACY);
+  if (legacy) {
+    localStorage.setItem(TOKEN_KEY, legacy);
+    localStorage.removeItem(TOKEN_KEY_LEGACY);
+    return legacy;
+  }
+  return '';
 }
 
 export function setStoredToken(token: string) {

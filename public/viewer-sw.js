@@ -1,4 +1,4 @@
-const CACHE_NAME = 'efcp-viewer-v1';
+const CACHE_NAME = 'motor-world-viewer-v1';
 const APP_SHELL_URLS = [
   './viewer.html',
   './viewer.webmanifest',

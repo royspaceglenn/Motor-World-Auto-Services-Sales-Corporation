@@ -138,7 +138,7 @@ export function createMotorWorldSampleLines(): BillingLine[] {
 }
 
 const defaultHeader = (): BillingHeaderForm => ({
-  companyName: 'EFCP Motor Parts and Trading',
+  companyName: 'Motor World Auto Services & Sales Corporation',
   companyAddress: 'Your business address here',
   companyPhone: 'Tel. no. / mobile',
   billTo: 'MUNICIPALITY OF SARANGANI - MDRRMO',

@@ -2,19 +2,15 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Motor World Auto Services & Sales Corporation — app workspace
 
-This contains everything you need to run your app locally.
+This repository contains the Motor World admin UI, Electron desktop shell, SQLite API, and Capacitor/Android viewer build targets.
 
-View your app in AI Studio: https://ai.studio/apps/drive/10e7PdtwkSCV5QggtqjaOc9ZIww-VMdDX
+## Run locally
 
-## Run Locally
+**Prerequisites:** Node.js
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Install dependencies: `npm install`
+2. Copy `.env.example` to `.env` and adjust if needed (see `server/README.md` for API env vars).
+3. Run API + Vite together: `npm run dev`  
+   Or full desktop dev: `npm run setup` once, then `npm run desktop:start`.

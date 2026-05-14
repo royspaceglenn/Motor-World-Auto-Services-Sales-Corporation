@@ -20,7 +20,7 @@ export async function startServer(options = {}) {
 
   const port = Number(options.port || process.env.PORT || 3001);
   serverInstance = app.listen(port, () => {
-    console.log(`EFCP backend listening on port ${port}`);
+    console.log(`Motor World backend listening on port ${port}`);
     startViewerSyncLoop();
     scheduleViewerSync();
   });

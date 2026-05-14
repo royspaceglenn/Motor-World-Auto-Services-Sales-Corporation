@@ -6,7 +6,7 @@
  *   node scripts/write-bundled-api.mjs https://api.yourshop.com
  *   node scripts/write-bundled-api.mjs --clear
  *
- * Or set EFCP_PUBLIC_API_BASE and run with no URL argument.
+ * Or set MOTOR_WORLD_PUBLIC_API_BASE (or EFCP_PUBLIC_API_BASE) and run with no URL argument.
  */
 import fs from 'fs';
 import path from 'path';
@@ -28,7 +28,7 @@ if (args.includes('--clear') || args.includes('--local')) {
 }
 
 const urlArg = args.find((a) => !a.startsWith('--'));
-const fromEnv = process.env.EFCP_PUBLIC_API_BASE?.trim();
+const fromEnv = process.env.MOTOR_WORLD_PUBLIC_API_BASE?.trim() || process.env.EFCP_PUBLIC_API_BASE?.trim();
 const raw = urlArg || fromEnv;
 
 if (!raw) {
@@ -39,7 +39,7 @@ Missing API URL.
 
 Or:
 
-  set EFCP_PUBLIC_API_BASE=https://api.yourshop.com
+  set MOTOR_WORLD_PUBLIC_API_BASE=https://api.yourshop.com
   npm run desktop:installers:configure
 
 Then build installers:

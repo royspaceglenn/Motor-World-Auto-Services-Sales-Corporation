@@ -1,4 +1,4 @@
-package com.efcp.motorparts.viewer;
+package com.motorworld.auto.viewer;
 
 import com.getcapacitor.BridgeActivity;
 

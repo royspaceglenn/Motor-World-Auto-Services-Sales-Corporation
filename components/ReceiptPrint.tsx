@@ -134,7 +134,7 @@ export function buildReceiptHtml(transaction: Transaction): string {
   </style>
 </head>
 <body>
-  <div class="brand">EFCP Motor Parts and Trading</div>
+  <div class="brand">Motor World Auto Services & Sales Corporation</div>
   <div class="sub">Official Receipt</div>
   <div class="line"></div>
   <div class="row"><span>Date</span><span>${esc(new Date(transaction.timestamp).toLocaleString())}</span></div>
@@ -232,7 +232,7 @@ export function buildPaymentReceiptHtml(input: PaymentReceiptInput): string {
   </style>
 </head>
 <body>
-  <div class="brand">EFCP Motor Parts and Trading</div>
+  <div class="brand">Motor World Auto Services & Sales Corporation</div>
   <div class="sub">Official Receipt — Payment Received</div>
   <div class="status">${statusLabel}</div>
   <div class="row"><span>Date</span><span>${esc(new Date(input.paidAt).toLocaleString())}</span></div>

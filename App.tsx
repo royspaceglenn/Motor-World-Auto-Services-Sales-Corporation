@@ -39,6 +39,7 @@ import { DocumentArchivesView } from './components/DocumentArchivesView';
 import { DocumentPrintPreviewModal } from './components/DocumentPrintPreviewModal';
 import { subscribeDocumentPreview } from './lib/documentPreviewBus';
 import type { DocumentPreviewDoc } from './lib/documentPreviewBus';
+import { COMPANY_DISPLAY_NAME } from './lib/company';
 import { Button } from './components/ui/Button';
 import {
   cx,
@@ -157,7 +158,7 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // --- Data Loading: use backend when user is logged in so admin and EFCP Motor Parts and Trading see the same data ---
+  // --- Data Loading: use backend when user is logged in so admin and overseer see the same data ---
   const fetchItemsAndTransactions = React.useCallback(() => {
     if (!user) return;
     itemsApi.list()
@@ -235,8 +236,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (items.length > 0 || transactions.length > 0) {
-      localStorage.setItem('smartstock_items', JSON.stringify(items));
-      localStorage.setItem('smartstock_transactions', JSON.stringify(transactions));
+      localStorage.setItem('motorworld_items', JSON.stringify(items));
+      localStorage.setItem('motorworld_transactions', JSON.stringify(transactions));
     }
   }, [items, transactions]);
 
@@ -831,7 +832,7 @@ const App: React.FC = () => {
           </style>
         </head>
         <body>
-          <h1>EFCP Motor Parts and Trading — ${titleType}</h1>
+          <h1>${COMPANY_DISPLAY_NAME} — ${titleType}</h1>
           <p class="date">Period: ${historyStartDate || 'Start'} to ${historyEndDate || 'Present'} | Generated: ${new Date().toLocaleDateString()}</p>
           <table>
             <thead>
@@ -959,7 +960,7 @@ const App: React.FC = () => {
               </div>
               <div className="min-w-0">
                 <h1 className="break-words text-sm font-semibold leading-snug text-white">
-                  EFCP Motor Parts and Trading
+                  {COMPANY_DISPLAY_NAME}
                 </h1>
                 <p className="text-xs text-slate-200">All-in-One Management</p>
               </div>
@@ -1053,7 +1054,7 @@ const App: React.FC = () => {
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-300">
-                    EFCP Motor Parts and Trading
+                    {COMPANY_DISPLAY_NAME}
                   </p>
                   <h1 className="truncate text-lg font-semibold text-white">{activeViewMeta.title}</h1>
                   <p className="mt-1 text-sm text-slate-200">{activeViewMeta.description}</p>
@@ -1526,7 +1527,7 @@ const App: React.FC = () => {
           <ExpensesView canEdit={canEdit} />
         )}
 
-        {/* --- ACTIVITY LOG (EFCP Motor Parts and Trading) --- */}
+        {/* --- ACTIVITY LOG --- */}
         {view === 'activity_log' && isAdmin && (
           <ActivityLogView
             filterUserId={activityFilterUserId}
@@ -1534,7 +1535,7 @@ const App: React.FC = () => {
           />
         )}
 
-        {/* --- MANAGE USERS (EFCP Motor Parts and Trading) --- */}
+        {/* --- MANAGE USERS --- */}
         {view === 'manage_users' && isAdmin && (
           <ManageUsersView />
         )}

@@ -11,7 +11,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const serverRoot = path.resolve(__dirname, '..');
 const dataDir = path.join(serverRoot, 'data');
-const dbPath = process.env.SQLITE_DB_PATH || path.join(dataDir, 'efcp.sqlite');
+function defaultSqlitePath() {
+  const motorworld = path.join(dataDir, 'motorworld.sqlite');
+  const legacy = path.join(dataDir, 'efcp.sqlite');
+  if (fs.existsSync(motorworld)) return motorworld;
+  if (fs.existsSync(legacy)) return legacy;
+  return motorworld;
+}
+const dbPath = process.env.SQLITE_DB_PATH || defaultSqlitePath();
 
 const LEGACY_IMPORTS = {
   users: 'users.json',

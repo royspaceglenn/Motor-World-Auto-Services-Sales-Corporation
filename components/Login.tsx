@@ -2,13 +2,15 @@ import React, { useMemo, useState } from 'react';
 import { useAuth } from '../lib/auth/AuthContext';
 import { DEFAULT_REST_ADMIN_EMAIL } from '../lib/auth/adminLogin';
 import { USE_FIRESTORE_ADMIN_DATA } from '../lib/api/adminData';
+import { COMPANY_DISPLAY_NAME } from '../lib/company';
 import { User, Lock, Smartphone, ArrowRight, Shield } from 'lucide-react';
 import { Button } from './ui/Button';
 import { DashboardSurface } from './ui/DashboardPrimitives';
 
 function remoteApiDisplayLine(): string | null {
   const raw =
-    (typeof window !== 'undefined' && window.efcpDesktop?.apiBaseUrl) ||
+    (typeof window !== 'undefined' &&
+      (window.motorWorldDesktop?.apiBaseUrl || window.efcpDesktop?.apiBaseUrl)) ||
     (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
     '';
   const base = String(raw).replace(/\/$/, '').trim();
@@ -56,7 +58,7 @@ export const Login: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-300">Official application</p>
-                  <h1 className="text-xl font-semibold text-white">EFCP Motor Parts and Trading</h1>
+                  <h1 className="text-xl font-semibold text-white">{COMPANY_DISPLAY_NAME}</h1>
                 </div>
               </div>
 
@@ -99,7 +101,7 @@ export const Login: React.FC = () => {
               <p className="mt-2 text-sm text-slate-600">
                 {USE_FIRESTORE_ADMIN_DATA
                   ? 'Sign in with the Firebase email and password your administrator configured.'
-                  : 'Sign in with the username and password stored on your EFCP server (JWT session).'}
+                  : 'Sign in with the username and password stored on your Motor World server (JWT session).'}
               </p>
               {serverLine && (
                 <p className="mt-2 text-xs leading-relaxed text-slate-500">

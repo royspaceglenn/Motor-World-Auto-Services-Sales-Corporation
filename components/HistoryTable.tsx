@@ -95,7 +95,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
         </head>
         <body>
             <div class="header">
-            <div class="logo">EFCP Motor Parts and Trading</div>
+            <div class="logo">Motor World Auto Services & Sales Corporation</div>
             <div class="sub-header">Official Inventory Transaction Record</div>
             </div>
 
@@ -158,7 +158,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
             </div>
 
             <div class="footer">
-            This is a system generated document. EFCP Motor Parts and Trading Management System.
+            This is a system generated document. Motor World Auto Services & Sales Corporation Management System.
             </div>
         </body>
         </html>

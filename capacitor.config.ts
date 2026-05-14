@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.efcp.motorparts.viewer',
-  appName: 'EFCP Viewer',
+  appId: 'com.motorworld.auto.viewer',
+  appName: 'Motor World Viewer',
   webDir: 'dist-viewer',
   android: {
     allowMixedContent: false,

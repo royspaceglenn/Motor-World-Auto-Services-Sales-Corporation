@@ -38,6 +38,9 @@ function readServiceAccount(settings) {
   if (path.isAbsolute(configuredPath)) {
     candidates.push(configuredPath);
   } else {
+    if (process.env.MOTOR_WORLD_APP_DATA_DIR) {
+      candidates.push(path.join(process.env.MOTOR_WORLD_APP_DATA_DIR, configuredPath));
+    }
     if (process.env.EFCP_APP_DATA_DIR) {
       candidates.push(path.join(process.env.EFCP_APP_DATA_DIR, configuredPath));
     }

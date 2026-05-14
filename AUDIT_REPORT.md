@@ -1,5 +1,5 @@
 # System Audit & Final Validation Report  
-**EFCP Motor Parts / SKPPO Logistics Management System**  
+**Motor World Auto Services & Sales Corporation / SKPPO Logistics Management System**  
 **Node.js + Express + Supabase (and JSON file store)**  
 **Audit Date:** 2026-02-25  
 
@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-The system implements sales (Product/Service), returns, SOA, loans, persons/vehicles, expenses, activity logs, and notifications. **Only users are stored in Supabase**; all other data (transactions, items, SOA, loans, activity, notifications, persons, vehicles, expenses) is stored in **JSON files** under `server/data/`. Role-based access is enforced in the **UI** (admin vs EFCP Motor Parts) but **not** in the API for write operations: any authenticated user can call write endpoints. Stock deduction for Product sales is performed only on the **frontend**; the backend does not deduct stock or validate stock level on release.
+The system implements sales (Product/Service), returns, SOA, loans, persons/vehicles, expenses, activity logs, and notifications. **Only users are stored in Supabase**; all other data (transactions, items, SOA, loans, activity, notifications, persons, vehicles, expenses) is stored in **JSON files** under `server/data/`. Role-based access is enforced in the **UI** (admin vs overseer) but **not** in the API for write operations: any authenticated user can call write endpoints. Stock deduction for Product sales is performed only on the **frontend**; the backend does not deduct stock or validate stock level on release.
 
 **Readiness: Needs Minor Fixes** — Core flows work; recommended fixes address permission enforcement, stock consistency, and one auth middleware pattern.
 
@@ -16,7 +16,7 @@ The system implements sales (Product/Service), returns, SOA, loans, persons/vehi
 ## 1. Role & Permission Verification
 
 ### What Works
-- **Internal role values** are unchanged: `role === 'overseer'` and `role === 'admin'` used throughout; display name "EFCP Motor Parts" is separate.
+- **Internal role values** are unchanged: `role === 'overseer'` and `role === 'admin'` used throughout; display labels are separate from these values.
 - **RBAC middleware** is correct: `requireOverseer`, `requireOverseerOrAdmin`, `requireRole()` behave as intended.
 - **Overseer-only routes** are properly protected: `/api/users`, `/api/activity` GET, `/api/notifications`, `/api/backups` use `authMiddleware` + `requireOverseer`.
 - **Activity log** POST uses `requireOverseerOrAdmin`; notifications are created only when the actor is admin.

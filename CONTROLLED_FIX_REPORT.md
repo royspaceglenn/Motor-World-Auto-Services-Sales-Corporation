@@ -35,7 +35,7 @@
 
 ### Routes Left Unchanged (by design)
 
-- **GET** routes on all above resources: still only `authMiddleware` → both Admin and Overseer (EFCP Motor Parts) can view.
+- **GET** routes on all above resources: still only `authMiddleware` → both Admin and Overseer can view.
 - **Users:** still `authMiddleware` + `requireOverseer` (only overseer can manage users).
 - **Activity:** POST `/log` uses `requireOverseerOrAdmin`; GET uses `requireOverseer`.
 - **Notifications:** entire router uses `requireOverseer`; overseer can mark read (no `requireAdmin` on PATCH).

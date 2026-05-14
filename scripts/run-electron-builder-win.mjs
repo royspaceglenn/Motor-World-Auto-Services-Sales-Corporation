@@ -9,9 +9,9 @@ import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const efcpRoot = path.resolve(__dirname, '..');
-const releaseDir = path.join(efcpRoot, 'release');
-const stopScript = path.join(efcpRoot, 'scripts', 'stop-win-unpacked-locks.ps1');
+const projectRoot = path.resolve(__dirname, '..');
+const releaseDir = path.join(projectRoot, 'release');
+const stopScript = path.join(projectRoot, 'scripts', 'stop-win-unpacked-locks.ps1');
 
 const mode = process.argv[2];
 if (mode !== '--dir' && mode !== '--nsis') {
@@ -20,19 +20,19 @@ if (mode !== '--dir' && mode !== '--nsis') {
 }
 
 const builderArgs = mode === '--dir' ? ['--win', '--dir'] : ['--win', 'nsis'];
-const outBase = path.join(os.tmpdir(), `efcp-electron-out-${Date.now()}`);
+const outBase = path.join(os.tmpdir(), `motor-world-electron-out-${Date.now()}`);
 
 spawnSync(
   'powershell.exe',
   ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', stopScript],
-  { cwd: efcpRoot, stdio: 'inherit', shell: false },
+  { cwd: projectRoot, stdio: 'inherit', shell: false },
 );
 
 const configArg = `-c.directories.output=${outBase}`;
 const r = spawnSync(
   'npx',
   ['electron-builder', ...builderArgs, configArg],
-  { cwd: efcpRoot, stdio: 'inherit', shell: true },
+  { cwd: projectRoot, stdio: 'inherit', shell: true },
 );
 
 if (r.status !== 0) {
@@ -57,7 +57,7 @@ for (const name of fs.readdirSync(outBase)) {
   } catch {
     const alt = path.join(releaseDir, `${name}-fresh-${Date.now()}`);
     console.warn(
-      `\nCould not replace "${to}" (close the EFCP Motor Parts and Trading app and any Explorer window on that folder, then delete the old folder).\n` +
+      `\nCould not replace "${to}" (close the Motor World Auto Services & Sales Corporation desktop app and any Explorer window on that folder, then delete the old folder).\n` +
         `Copied this build to:\n  ${alt}\n`,
     );
     fs.cpSync(from, alt, { recursive: true });

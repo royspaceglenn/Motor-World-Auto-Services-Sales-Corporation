@@ -1,5 +1,5 @@
 {
-  "name": "efcp-sqlite-backend",
+  "name": "motor-world-sqlite-backend",
   "private": true,
   "type": "module",
   "scripts": {

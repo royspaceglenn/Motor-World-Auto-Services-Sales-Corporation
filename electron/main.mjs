@@ -5,8 +5,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from 'electron';
 
-const APP_DISPLAY_NAME = 'EFCP Motor Parts and Trading';
-const APP_USER_DATA_DIR = 'EFCP Motor Parts and Trading';
+const APP_DISPLAY_NAME = 'Motor World Auto Services & Sales Corporation';
+const APP_USER_DATA_DIR = 'Motor World Auto Services & Sales Corporation';
+const LEGACY_APP_USER_DATA_DIR = 'EFCP Motor Parts and Trading';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,13 +65,13 @@ function ensureWindowsPathForChild(env) {
 
 /** System Node for the SQLite API (not Electron's runtime). */
 function resolveNodeExecutable(env = process.env) {
-  const fromEnv = trimExecutableEnv(env.EFCP_NODE_EXECUTABLE);
+  const fromEnv = trimExecutableEnv(env.MOTOR_WORLD_NODE_EXECUTABLE || env.EFCP_NODE_EXECUTABLE);
   if (fromEnv) {
     const normalized = path.normalize(fromEnv);
     if (fs.existsSync(normalized)) {
       return normalized;
     }
-    appendStartupLog(`EFCP_NODE_EXECUTABLE not found on disk: ${normalized}`);
+    appendStartupLog(`MOTOR_WORLD_NODE_EXECUTABLE not found on disk: ${normalized}`);
   }
 
   if (process.platform === 'win32') {
@@ -143,7 +144,18 @@ function adminUrl() {
 
 function getDesktopDataRoot() {
   if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
-    return path.join(process.env.LOCALAPPDATA, APP_USER_DATA_DIR);
+    const base = process.env.LOCALAPPDATA;
+    const nextPath = path.join(base, APP_USER_DATA_DIR);
+    const legacyPath = path.join(base, LEGACY_APP_USER_DATA_DIR);
+    try {
+      const legacyData = path.join(legacyPath, 'data');
+      if (!fs.existsSync(nextPath) && fs.existsSync(legacyData)) {
+        return legacyPath;
+      }
+    } catch {
+      // ignore
+    }
+    return nextPath;
   }
 
   return app.getPath('userData');
@@ -169,21 +181,21 @@ function isRemoteApiBaseUrl(url) {
 /** Baked into packaged installers only — dev (`electron .`) always uses the local embedded API. */
 function tryLoadBundledApiBaseUrl() {
   if (!app.isPackaged) return;
-  if (process.env.EFCP_API_BASE_URL) return;
+  if (process.env.MOTOR_WORLD_API_BASE_URL || process.env.EFCP_API_BASE_URL) return;
   try {
     const filePath = path.join(__dirname, 'bundled-api.json');
     if (!fs.existsSync(filePath)) return;
     const cfg = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     const url = normalizeApiBaseUrl(cfg.apiBaseUrl);
     if (!url) return;
-    process.env.EFCP_API_BASE_URL = url;
-    appendStartupLog(`bundled-api.json: EFCP_API_BASE_URL=${url}`);
+    process.env.MOTOR_WORLD_API_BASE_URL = url;
+    appendStartupLog(`bundled-api.json: MOTOR_WORLD_API_BASE_URL=${url}`);
   } catch (err) {
     appendStartupLog(`bundled-api.json read failed: ${err?.message || err}`);
   }
 }
 
-/** Optional override: %LOCALAPPDATA%/EFCP Motor Parts and Trading/api-settings.json */
+/** Optional override: %LOCALAPPDATA%/<app data dir>/api-settings.json */
 function tryLoadApiBaseUrlFromDisk() {
   try {
     const base = getDesktopDataRoot();
@@ -192,8 +204,8 @@ function tryLoadApiBaseUrlFromDisk() {
     const cfg = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     const fromFile = normalizeApiBaseUrl(cfg.apiBaseUrl);
     if (fromFile) {
-      process.env.EFCP_API_BASE_URL = fromFile;
-      appendStartupLog(`api-settings.json: EFCP_API_BASE_URL=${fromFile}`);
+      process.env.MOTOR_WORLD_API_BASE_URL = fromFile;
+      appendStartupLog(`api-settings.json: MOTOR_WORLD_API_BASE_URL=${fromFile}`);
     }
   } catch (err) {
     appendStartupLog(`api-settings.json read failed: ${err?.message || err}`);
@@ -250,7 +262,9 @@ function showFatalStartupError(title, err) {
 }
 
 async function startEmbeddedBackend() {
-  const remoteApi = normalizeApiBaseUrl(process.env.EFCP_API_BASE_URL);
+  const remoteApi = normalizeApiBaseUrl(
+    process.env.MOTOR_WORLD_API_BASE_URL || process.env.EFCP_API_BASE_URL,
+  );
   if (isRemoteApiBaseUrl(remoteApi)) {
     appendStartupLog(`remote API mode (${remoteApi}); skipping embedded SQLite backend`);
     stopBackend = async () => {};
@@ -262,11 +276,23 @@ async function startEmbeddedBackend() {
   fs.mkdirSync(dataDir, { recursive: true });
 
   const syncSettingsPath =
-    process.env.EFCP_SYNC_SETTINGS_PATH || path.join(appDataDir, 'sync-settings.json');
-  const sqlitePath = process.env.SQLITE_DB_PATH || path.join(dataDir, 'efcp.sqlite');
+    process.env.MOTOR_WORLD_SYNC_SETTINGS_PATH ||
+    process.env.EFCP_SYNC_SETTINGS_PATH ||
+    path.join(appDataDir, 'sync-settings.json');
+  const sqlitePath =
+    process.env.SQLITE_DB_PATH ||
+    (() => {
+      const motor = path.join(dataDir, 'motorworld.sqlite');
+      const legacy = path.join(dataDir, 'efcp.sqlite');
+      if (fs.existsSync(motor)) return motor;
+      if (fs.existsSync(legacy)) return legacy;
+      return motor;
+    })();
 
   const backendEnv = ensureWindowsPathForChild({
     ...process.env,
+    MOTOR_WORLD_APP_DATA_DIR: appDataDir,
+    MOTOR_WORLD_SYNC_SETTINGS_PATH: syncSettingsPath,
     EFCP_APP_DATA_DIR: appDataDir,
     EFCP_SYNC_SETTINGS_PATH: syncSettingsPath,
     PORT: String(backendPort),
@@ -319,7 +345,7 @@ async function startEmbeddedBackend() {
         new Error(
           `Backend exited before listening (code ${code}, signal ${signal ?? 'none'}). ` +
             `Install Node.js (https://nodejs.org). If Node is installed, sign out of Windows once after changing ` +
-            `environment variables, or set EFCP_NODE_EXECUTABLE to the full path of node.exe (no quotes). ` +
+            `environment variables, or set MOTOR_WORLD_NODE_EXECUTABLE (or EFCP_NODE_EXECUTABLE) to the full path of node.exe (no quotes). ` +
             `If the log shows a crash in the API process, open the log path below for stderr details. ` +
             `From the project folder you can run: npm run rebuild:server-sqlite then npm run desktop:pack. ` +
             `Details: %LOCALAPPDATA%\\${APP_USER_DATA_DIR}\\logs\\startup.log`,
@@ -549,7 +575,7 @@ if (!gotLock) {
       appendStartupLog(`starting packaged=${app.isPackaged} appPath=${app.getAppPath()}`);
       app.setName(APP_DISPLAY_NAME);
       if (process.platform === 'win32') {
-        app.setAppUserModelId('com.efcp.desktop');
+        app.setAppUserModelId('com.motorworld.desktop');
       }
       tryLoadBundledApiBaseUrl();
       tryLoadApiBaseUrlFromDisk();

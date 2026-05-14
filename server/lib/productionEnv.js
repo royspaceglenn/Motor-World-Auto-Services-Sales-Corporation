@@ -9,7 +9,7 @@ export function assertProductionSafe() {
   const weak = new Set(['', 'dev-secret', 'change-me', 'changeme']);
   if (weak.has(secret.toLowerCase()) || secret.length < 32) {
     throw new Error(
-      '[efcp] Production requires JWT_SECRET: use a random value at least 32 characters (e.g. openssl rand -hex 32). ' +
+      '[motor-world] Production requires JWT_SECRET: use a random value at least 32 characters (e.g. openssl rand -hex 32). ' +
         'Do not use dev-secret or change-me.'
     );
   }
@@ -17,14 +17,14 @@ export function assertProductionSafe() {
   const cors = String(process.env.CORS_ORIGINS || '').trim();
   if (!cors) {
     throw new Error(
-      '[efcp] Production requires CORS_ORIGINS: comma-separated browser origins allowed to call this API, ' +
+      '[motor-world] Production requires CORS_ORIGINS: comma-separated browser origins allowed to call this API, ' +
         'e.g. CORS_ORIGINS=https://app.yourdomain.com,https://www.yourdomain.com'
     );
   }
 
   if (String(process.env.ALLOW_UNAUTHENTICATED_API || '').toLowerCase() === 'true') {
     console.warn(
-      '[efcp] WARNING: ALLOW_UNAUTHENTICATED_API=true — any caller can impersonate the primary user. Never use on the public internet.'
+      '[motor-world] WARNING: ALLOW_UNAUTHENTICATED_API=true — any caller can impersonate the primary user. Never use on the public internet.'
     );
   }
 }

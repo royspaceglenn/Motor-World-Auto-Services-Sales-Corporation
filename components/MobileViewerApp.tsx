@@ -17,6 +17,7 @@ import {
   DashboardSectionHeader,
   DashboardSurface,
 } from './ui/DashboardPrimitives';
+import { COMPANY_DISPLAY_NAME } from '../lib/company';
 
 type ViewerTab = 'overview' | 'inventory' | 'history' | 'expenses';
 
@@ -59,7 +60,22 @@ type ViewerExpense = {
   recordedBy?: string | null;
 };
 
-const SIGNED_OUT_KEY = 'efcp_mobile_viewer_signed_out';
+const SIGNED_OUT_KEY = 'motorworld_mobile_viewer_signed_out';
+const SIGNED_OUT_KEY_LEGACY = 'efcp_mobile_viewer_signed_out';
+
+function isViewerSignedOutFlag(): boolean {
+  try {
+    if (localStorage.getItem(SIGNED_OUT_KEY) === '1') return true;
+    if (localStorage.getItem(SIGNED_OUT_KEY_LEGACY) === '1') {
+      localStorage.setItem(SIGNED_OUT_KEY, '1');
+      localStorage.removeItem(SIGNED_OUT_KEY_LEGACY);
+      return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
 
 const viewerTabs: Array<{
   id: ViewerTab;
@@ -87,7 +103,7 @@ export const MobileViewerApp: React.FC = () => {
   const [inventory, setInventory] = useState<ViewerInventoryItem[]>([]);
   const [history, setHistory] = useState<ViewerTransaction[]>([]);
   const [expenses, setExpenses] = useState<ViewerExpense[]>([]);
-  const [autoSignInEnabled, setAutoSignInEnabled] = useState(() => localStorage.getItem(SIGNED_OUT_KEY) !== '1');
+  const [autoSignInEnabled, setAutoSignInEnabled] = useState(() => !isViewerSignedOutFlag());
 
   const firebaseConfigured = isViewerFirebaseConfigured();
   const auth = getViewerAuth();
@@ -191,6 +207,7 @@ export const MobileViewerApp: React.FC = () => {
     setError(null);
     setAutoSignInEnabled(true);
     localStorage.removeItem(SIGNED_OUT_KEY);
+    localStorage.removeItem(SIGNED_OUT_KEY_LEGACY);
 
     try {
       await signInAnonymously(auth);
@@ -205,6 +222,7 @@ export const MobileViewerApp: React.FC = () => {
     setError(null);
     setAutoSignInEnabled(false);
     localStorage.setItem(SIGNED_OUT_KEY, '1');
+    localStorage.removeItem(SIGNED_OUT_KEY_LEGACY);
 
     try {
       await signOut(auth);
@@ -234,7 +252,7 @@ export const MobileViewerApp: React.FC = () => {
                 <Smartphone className="h-7 w-7" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600">EFCP Motor Parts and Trading</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600">{COMPANY_DISPLAY_NAME}</p>
                 <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Viewer not configured</h1>
                 <p className="mt-2 text-sm text-slate-600">Firebase viewer is not configured yet.</p>
               </div>
@@ -261,7 +279,7 @@ export const MobileViewerApp: React.FC = () => {
               </div>
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-300">Read-only viewer</p>
-                <h1 className="truncate text-sm font-semibold leading-snug text-white">EFCP Motor Parts and Trading</h1>
+                <h1 className="truncate text-sm font-semibold leading-snug text-white">{COMPANY_DISPLAY_NAME}</h1>
                 <p className="text-xs text-slate-200">Phone-ready dashboard</p>
               </div>
             </div>
@@ -293,7 +311,7 @@ export const MobileViewerApp: React.FC = () => {
                   window.location.href = './';
                 }}
               >
-                Back to EFCP Motor Parts and Trading
+                Back to {COMPANY_DISPLAY_NAME}
               </Button>
               <Button
                 variant="ghost"
@@ -330,7 +348,7 @@ export const MobileViewerApp: React.FC = () => {
                 <div className="min-w-0">
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-200">
                     <Smartphone className="h-3.5 w-3.5" />
-                    EFCP Motor Parts and Trading
+                    {COMPANY_DISPLAY_NAME}
                   </div>
                   <h1 className="mt-3 text-xl font-semibold text-white">Phone Dashboard</h1>
                   <p className="mt-1 text-sm text-slate-400">Shop: {shopId || 'main'}</p>

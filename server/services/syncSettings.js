@@ -2,10 +2,16 @@ import fs from 'fs';
 import path from 'path';
 
 function defaultSettingsPath() {
+  if (process.env.MOTOR_WORLD_SYNC_SETTINGS_PATH) {
+    return process.env.MOTOR_WORLD_SYNC_SETTINGS_PATH;
+  }
   if (process.env.EFCP_SYNC_SETTINGS_PATH) {
     return process.env.EFCP_SYNC_SETTINGS_PATH;
   }
 
+  if (process.env.MOTOR_WORLD_APP_DATA_DIR) {
+    return path.join(process.env.MOTOR_WORLD_APP_DATA_DIR, 'sync-settings.json');
+  }
   if (process.env.EFCP_APP_DATA_DIR) {
     return path.join(process.env.EFCP_APP_DATA_DIR, 'sync-settings.json');
   }

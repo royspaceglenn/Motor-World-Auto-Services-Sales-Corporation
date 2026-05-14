@@ -4,7 +4,7 @@ export const DEFAULT_REST_ADMIN_PASSWORD = 'maoningpassword';
 
 export const SINGLE_ADMIN_USERNAME = 'admin';
 
-export const FIREBASE_SIGNIN_EMAIL = 'admin@efcp.com';
+export const FIREBASE_SIGNIN_EMAIL = 'admin@motorworldcorp.com';
 
 export function normalizeLocalLogin(raw) {
   const t = String(raw || '').trim().toLowerCase();

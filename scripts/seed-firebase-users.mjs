@@ -1,6 +1,6 @@
 import { getAdminAuth, getAdminDb } from './firebase-admin.mjs';
 
-const SINGLE_ADMIN_EMAIL = 'admin@efcp.com';
+const SINGLE_ADMIN_EMAIL = 'admin@motorworldcorp.com';
 
 const seedUsers = [
   {
