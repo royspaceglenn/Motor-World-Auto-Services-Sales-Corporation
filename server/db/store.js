@@ -102,12 +102,14 @@ export async function ensureStoreInitialized() {
 
 export async function initializeStore() {
   if (initialized) return;
-  /** Seed `users` first so login can succeed after minimal round-trips; then remaining tables in parallel. */
+  /**
+   * Only materialize `users` at startup. Every other collection is created lazily on first
+   * `readCollection` (empty default), which avoids a long Postgres burst before `/api/auth/login`
+   * on Vercel cold starts.
+   */
   await collectionsBackend.seedEmptyCollections([COLLECTIONS.users]);
   const users = await collectionsBackend.readCollection(COLLECTIONS.users, []);
   await collectionsBackend.writeCollection(COLLECTIONS.users, consolidateUsersToSingleAdmin(users));
-  const rest = Object.values(COLLECTIONS).filter((n) => n !== COLLECTIONS.users);
-  await collectionsBackend.seedEmptyCollections(rest);
   initialized = true;
 }
 
