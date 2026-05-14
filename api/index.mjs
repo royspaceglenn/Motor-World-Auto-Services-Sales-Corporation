@@ -24,9 +24,11 @@ export default async function vercelApi(req, res) {
       assertVercelHasPostgres();
       const { assertProductionSafe } = await import('../server/lib/productionEnv.js');
       assertProductionSafe();
-      const { initializeStore } = await import('../server/db/store.js');
+      const [{ initializeStore }, { default: app }] = await Promise.all([
+        import('../server/db/store.js'),
+        import('../server/app.js'),
+      ]);
       await initializeStore();
-      const { default: app } = await import('../server/app.js');
       handler = serverless(app);
     }
     return handler(req, res);

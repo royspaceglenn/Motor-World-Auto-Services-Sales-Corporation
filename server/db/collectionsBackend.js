@@ -71,7 +71,13 @@ function initSqlite() {
 async function initPostgres() {
   const { Pool } = await import('pg');
   const connectionString = process.env.DATABASE_URL.trim();
-  pgPool = new Pool({ connectionString, max: 10, idleTimeoutMillis: 30_000 });
+  const onVercel = String(process.env.VERCEL || '').trim() === '1';
+  pgPool = new Pool({
+    connectionString,
+    max: onVercel ? 2 : 10,
+    idleTimeoutMillis: onVercel ? 20_000 : 30_000,
+    connectionTimeoutMillis: onVercel ? 25_000 : 0,
+  });
   await pgPool.query(`
     CREATE TABLE IF NOT EXISTS collections (
       name TEXT PRIMARY KEY,

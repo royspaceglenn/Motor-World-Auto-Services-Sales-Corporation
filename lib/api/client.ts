@@ -194,7 +194,8 @@ export function hasStoredAuthToken() {
   return Boolean(getStoredToken());
 }
 
-const DEFAULT_REQUEST_TIMEOUT_MS = 28_000;
+/** Must stay below Vercel `api/index.mjs` maxDuration (see vercel.json) so the client does not abort first. */
+const DEFAULT_REQUEST_TIMEOUT_MS = 58_000;
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers || {});
