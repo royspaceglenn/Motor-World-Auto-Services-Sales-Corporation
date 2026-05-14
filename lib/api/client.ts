@@ -189,6 +189,11 @@ export function setStoredToken(token: string) {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
+/** True if a JWT may exist (REST auth bootstrap can skip the network when false). */
+export function hasStoredAuthToken() {
+  return Boolean(getStoredToken());
+}
+
 const DEFAULT_REQUEST_TIMEOUT_MS = 28_000;
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {

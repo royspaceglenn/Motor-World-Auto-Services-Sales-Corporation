@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { authApi, setStoredToken, USE_FIRESTORE_ADMIN_DATA, type ApiUser } from '../api/adminData';
-import { HttpError } from '../api/client';
+import { hasStoredAuthToken, HttpError } from '../api/client';
 import { observeFirebaseAuth } from '../firebase/auth';
 import { loginForFirebaseAuth, normalizeLocalLogin } from './adminLogin';
 
@@ -19,7 +19,10 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  /** Block UI only when REST mode and a token might be valid (session restore). Firebase paints immediately. */
+  const [isLoading, setIsLoading] = useState(
+    () => !USE_FIRESTORE_ADMIN_DATA && hasStoredAuthToken()
+  );
 
   const refreshUser = useCallback(async () => {
     const maxAttempts = 6;
@@ -45,10 +48,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (USE_FIRESTORE_ADMIN_DATA) {
+      setIsLoading(false);
       return observeFirebaseAuth(({ appUser }) => {
         setUser(appUser as AuthUser | null);
-        setIsLoading(false);
       });
+    }
+    if (!hasStoredAuthToken()) {
+      setUser(null);
+      setIsLoading(false);
+      return;
     }
     void refreshUser().finally(() => setIsLoading(false));
   }, [refreshUser]);
