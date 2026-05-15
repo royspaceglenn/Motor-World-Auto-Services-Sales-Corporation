@@ -9,6 +9,7 @@
     "rebuild:sqlite": "node ../scripts/ensure-server-sqlite.mjs"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

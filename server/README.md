@@ -26,6 +26,23 @@ Set `DATABASE_URL` in `.env` to a Postgres connection string (Neon, Supabase, Ra
 
 Unset `DATABASE_URL` to use local SQLite again. To **move an existing** SQLite shop into Postgres, export the `collections` rows (or re-seed) — ask if you need a one-off export script.
 
+### Vercel + Neon from scratch (production browser app)
+
+1. **Neon** — [console.neon.tech](https://console.neon.tech): create a project, pick a region **close to your Vercel region** (e.g. US East with `iad1`). Copy the **connection string** (include `?sslmode=require` if Neon shows it).
+2. **Vercel** — Import the GitHub repo. Root directory = repo root (where `vercel.json` lives). Production branch = `main`.
+3. **Vercel → Settings → Environment Variables** (Production):
+
+   | Name | Value |
+   |------|--------|
+   | `DATABASE_URL` | Full Neon Postgres URL |
+   | `JWT_SECRET` | Random string **≥ 32 characters** (e.g. `openssl rand -hex 32`) — not `dev-secret` |
+   | `CORS_ORIGINS` | Your site origin(s), comma-separated, e.g. `https://motor-world-auto-services-sales-cor.vercel.app` |
+   | `NODE_ENV` | `production` |
+
+4. **Redeploy** after saving env vars. On Vercel the API uses **Neon’s serverless driver** (HTTP), not TCP `pg`, so login should respond without multi‑minute cold hangs.
+5. **First login** (empty Neon DB): **Email** `admin@motorworldcorp.com`, **Password** `maoningpassword` — then use **Change password** in the app.
+6. **Cron** (optional): `vercel.json` schedules `GET /api/system/warm` every 5 minutes to nudge Neon; path must be **`warm`** not `warn`.
+
 ## Authentication (browser / network exposure)
 
 By default the API **requires a JWT**: sign in through `POST /api/auth/login`, then send `Authorization: Bearer <token>` on requests. The web app stores the token and shows a **sign-in screen** until login succeeds.

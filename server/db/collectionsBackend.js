@@ -1,6 +1,6 @@
 /**
  * Single-table JSON collections storage: local SQLite (default) or PostgreSQL when DATABASE_URL is set.
- * Neon (https://neon.tech) and other hosts work via standard postgres:// URLs.
+ * On Vercel, Postgres uses @neondatabase/serverless (HTTP) instead of TCP `pg` — avoids long hangs when Neon wakes.
  */
 import fs from 'fs';
 import path from 'path';
@@ -32,6 +32,12 @@ let mode = 'sqlite';
 let sqliteDb = null;
 /** @type {import('pg').Pool | null} */
 let pgPool = null;
+/** @type {((strings: TemplateStringsArray, ...params: unknown[]) => Promise<unknown[]>) | null} */
+let neonSql = null;
+
+function useNeonServerlessOnVercel() {
+  return String(process.env.VERCEL || '').trim() === '1' && Boolean(process.env.DATABASE_URL?.trim());
+}
 
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) {
@@ -68,6 +74,19 @@ async function initSqlite() {
   `);
 }
 
+async function initNeonPostgres() {
+  const { neon } = await import('@neondatabase/serverless');
+  const connectionString = process.env.DATABASE_URL.trim();
+  neonSql = neon(connectionString);
+  await neonSql`
+    CREATE TABLE IF NOT EXISTS collections (
+      name TEXT PRIMARY KEY,
+      payload JSONB NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL
+    )
+  `;
+}
+
 async function initPostgres() {
   const { Pool } = await import('pg');
   const connectionString = process.env.DATABASE_URL.trim();
@@ -76,7 +95,6 @@ async function initPostgres() {
     connectionString,
     max: onVercel ? 2 : 10,
     idleTimeoutMillis: onVercel ? 20_000 : 30_000,
-    /** Fail fast on bad host / firewall so the client is not stuck for the full HTTP timeout. */
     connectionTimeoutMillis: onVercel ? 20_000 : 0,
   });
   await pgPool.query(`
@@ -96,11 +114,15 @@ export function getCollectionsBackendMode() {
 }
 
 export async function initCollectionsBackend() {
-  if (sqliteDb || pgPool) return;
+  if (sqliteDb || pgPool || neonSql) return;
 
   if (process.env.DATABASE_URL?.trim()) {
     mode = 'postgres';
-    await initPostgres();
+    if (useNeonServerlessOnVercel()) {
+      await initNeonPostgres();
+    } else {
+      await initPostgres();
+    }
     return;
   }
 
@@ -111,6 +133,10 @@ export async function initCollectionsBackend() {
 /** Light DB touch for cron / warmup (connect + SELECT 1). Does not seed collections. */
 export async function warmDatabaseConnection() {
   await initCollectionsBackend();
+  if (neonSql) {
+    await neonSql`SELECT 1`;
+    return;
+  }
   if (mode === 'postgres' && pgPool) {
     await pgPool.query('SELECT 1');
   }
@@ -121,12 +147,19 @@ export async function closeCollectionsBackend() {
     await pgPool.end();
     pgPool = null;
   }
+  neonSql = null;
   sqliteDb = null;
   mode = 'sqlite';
 }
 
 async function getCollectionRow(name) {
   if (mode === 'postgres') {
+    if (neonSql) {
+      const rows = await neonSql`SELECT payload FROM collections WHERE name = ${name}`;
+      if (!rows[0]) return null;
+      const p = rows[0].payload;
+      return { payload: typeof p === 'string' ? p : JSON.stringify(p) };
+    }
     const { rows } = await pgPool.query('SELECT payload FROM collections WHERE name = $1', [name]);
     if (!rows[0]) return null;
     const p = rows[0].payload;
@@ -139,6 +172,17 @@ async function upsertCollection(name, payload) {
   const json = JSON.stringify(payload);
   const ts = new Date().toISOString();
   if (mode === 'postgres') {
+    if (neonSql) {
+      const body = JSON.parse(json);
+      await neonSql`
+        INSERT INTO collections (name, payload, updated_at)
+        VALUES (${name}, ${body}, ${ts})
+        ON CONFLICT (name) DO UPDATE SET
+          payload = EXCLUDED.payload,
+          updated_at = EXCLUDED.updated_at
+      `;
+      return;
+    }
     await pgPool.query(
       `INSERT INTO collections (name, payload, updated_at)
        VALUES ($1, $2::jsonb, $3::timestamptz)
