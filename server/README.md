@@ -1,5 +1,7 @@
 # Motor World Auto Services & Sales Corporation — Backend
 
+**New install or redeploy?** Read the repo root **[docs/SETUP_FROM_ZERO.md](../docs/SETUP_FROM_ZERO.md)** first (Vercel + Render split vs Vercel + Neon).
+
 Express API for the **Motor World Auto Services & Sales Corporation** admin desktop and browser app.
 
 The server is now the primary admin backend again:

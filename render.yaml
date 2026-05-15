@@ -1,0 +1,25 @@
+# Render Blueprint — Motor World API (Express + SQLite)
+# https://render.com/docs/blueprint-spec
+#
+# After deploy: set CORS_ORIGINS to your Vercel URL(s).
+# For durable SQLite, add a Disk in the Render dashboard, mount at /data, then set:
+#   SQLITE_DB_PATH=/data/motorworld.sqlite
+
+services:
+  - type: web
+    name: motorworld-api
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: npm install && npm install --prefix server
+    startCommand: cd server && NODE_ENV=production node index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false

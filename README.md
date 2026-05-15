@@ -1,37 +1,44 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Motor World — operations app
 
-# Motor World Auto Services & Sales Corporation — app workspace
+Admin workspace for **Motor World Auto Services & Sales Corporation**: inventory, purchasing, POS, receivables, expenses, and related workflows. Same codebase can run **locally**, on **Vercel**, on **Render**, or packaged with **Electron**.
 
-This repository contains the Motor World admin UI, Electron desktop shell, REST API (SQLite or Postgres), and Capacitor/Android viewer build targets.
+## Start here after a full reset
 
-## Deploy to Vercel (frontend + API on one domain)
+If you wiped **GitHub, Neon, and Vercel** and want a clean setup, follow:
 
-The static UI and the `/api/**` Express routes are deployed together:
+**[docs/SETUP_FROM_ZERO.md](docs/SETUP_FROM_ZERO.md)**
 
-- **`api/index.mjs`** — serverless wrapper around `server/app.js`
-- **`vercel.json`** — rewrites `/api/*` to that function; installs **root devDependencies** (Vite) and **`server/`** dependencies
-
-In the Vercel project → **Settings → Environment Variables** (apply to *Production* and *Preview* as needed):
-
-| Variable | Required | Notes |
-|----------|----------|--------|
-| `DATABASE_URL` | **Yes** on Vercel | Postgres (e.g. Neon). Serverless cannot rely on bundled SQLite for real data. |
-| `JWT_SECRET` | **Yes** if `NODE_ENV=production` | Random string **≥ 32 characters**. |
-| `NODE_ENV` | Recommended | `production` for live sites. |
-| `CORS_ORIGINS` | **Yes** if `NODE_ENV=production` | Exact origins, comma-separated, e.g. `https://your-app.vercel.app`. Add each **Preview** URL you use, or logins from preview deployments will fail CORS. |
-| `TRUST_PROXY` | Recommended | `1` so rate limits see the real client IP behind Vercel. |
-
-Leave **`VITE_API_BASE_URL` unset** (or empty) in Vercel so the browser calls **`/api/...` on the same hostname** (fixes “404 NOT_FOUND” on login).
-
-Redeploy after changing env vars.
+**Recommended path:** host the **website on Vercel** (static Vite build) and the **API on Render** with **SQLite** so you avoid serverless + cold database issues. Alternative: all-in-one on **Vercel + Neon** (see the same doc, Option B).
 
 ## Run locally
 
-**Prerequisites:** Node.js
+**Prerequisites:** Node.js 20+
 
-1. Install dependencies: `npm install`
-2. Copy `.env.example` to `.env` and adjust if needed (see `server/README.md` for API env vars).
-3. Run API + Vite together: `npm run dev`  
-   Or full desktop dev: `npm run setup` once, then `npm run desktop:start`.
+```bash
+npm install
+npm install --prefix server
+copy server\.env.example server\.env
+npm run dev
+```
+
+API defaults to port **3001**; Vite UI uses the port in `package.json` / `.env` (often **5174**). Details: **[server/README.md](server/README.md)**.
+
+## Repository layout (short)
+
+| Path | Role |
+|------|------|
+| `components/`, `App.tsx`, `lib/` | React admin UI |
+| `server/` | Express REST API (SQLite or Postgres) |
+| `api/index.mjs` | Vercel serverless entry when API is deployed on Vercel |
+| `vercel.json` | Default: Vite + serverless API on one host |
+| `config/vercel.frontend-only.example.json` | Use when API lives only on Render (copy to `vercel.json`) |
+| `render.yaml` | Optional Render blueprint for the API service |
+
+## Desktop & viewer
+
+- **Desktop:** `npm run desktop:start` (after `npm run setup` once).
+- **Mobile viewer:** `viewer.html` build targets and Capacitor scripts are described in `package.json` scripts.
+
+---
+
+*For deployment environment tables (JWT, CORS, Neon, emergency bypass), see **server/README.md** and **docs/SETUP_FROM_ZERO.md**.*

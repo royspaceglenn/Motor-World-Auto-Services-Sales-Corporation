@@ -115,8 +115,8 @@ export const Login: React.FC = () => {
               <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Welcome back</h2>
               <p className="mt-2 text-sm text-slate-600">
                 {USE_FIRESTORE_ADMIN_DATA
-                  ? 'Sign in with the Firebase email and password your administrator configured.'
-                  : 'Sign in with the username and password stored on your Motor World server (JWT session).'}
+                  ? 'Use the Firebase email and password from your administrator.'
+                  : 'Use the email and password for your Motor World account. The API checks them and issues a session token.'}
               </p>
               {serverLine && (
                 <p className="mt-2 text-xs leading-relaxed text-slate-500">
@@ -175,9 +175,7 @@ export const Login: React.FC = () => {
               </Button>
               {loading && slowHint && (
                 <p className="text-center text-xs leading-relaxed text-slate-500">
-                  Still reaching the server. On Vercel the first sign-in after idle can take up to about a minute
-                  while the API and database wake up. If your email and password are correct, you should get in—or see
-                  an error when the wait limit is reached.
+                  Still waiting on the server. If this is the first request in a while, the API or database may be waking up—try again in a moment.
                 </p>
               )}
             </form>
