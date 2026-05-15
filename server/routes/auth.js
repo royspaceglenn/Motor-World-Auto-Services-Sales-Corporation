@@ -6,6 +6,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { createUser, getUserByEmail, getUserById, mapUserToSession, updateUser } from '../db/store.js';
 import { logActivity } from '../services/activityLogger.js';
 import { normalizeLocalLogin } from '../lib/adminLogin.js';
+import { EMERGENCY_USER_ID, tryEmergencyStaticCredentials } from '../lib/emergencyAuth.js';
 
 const router = express.Router();
 
@@ -17,18 +18,16 @@ const loginLimiter = rateLimit({
   message: { error: 'Too many login attempts. Please try again later.' },
 });
 
-function signToken(user) {
+function signToken(user, { emergency = false } = {}) {
   const session = mapUserToSession(user);
-  return jwt.sign(
-    {
-      sub: session.id,
-      role: session.role,
-      email: session.email,
-      displayName: session.displayName,
-    },
-    process.env.JWT_SECRET || 'dev-secret',
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-  );
+  const body = {
+    sub: session.id,
+    role: session.role,
+    email: session.email,
+    displayName: session.displayName,
+  };
+  if (emergency) body.emergency = true;
+  return jwt.sign(body, process.env.JWT_SECRET || 'dev-secret', { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
 }
 
 router.post('/login', loginLimiter, async (req, res) => {
@@ -37,6 +36,15 @@ router.post('/login', loginLimiter, async (req, res) => {
     const password = String(req.body?.password || '');
     if (!email || !password) {
       return res.status(400).json({ error: 'Username and password are required.' });
+    }
+
+    const emerg = tryEmergencyStaticCredentials(email, password);
+    if (emerg) {
+      const session = mapUserToSession(emerg);
+      return res.json({
+        token: signToken(emerg, { emergency: true }),
+        user: session,
+      });
     }
 
     const user = await getUserByEmail(email);
@@ -63,6 +71,11 @@ router.get('/me', authMiddleware, (req, res) => {
 
 router.post('/password', authMiddleware, async (req, res) => {
   try {
+    if (req.user.id === EMERGENCY_USER_ID) {
+      return res.status(400).json({
+        error: 'Password change is disabled while EMERGENCY_BYPASS_DB is active. Fix the database, then turn off emergency env vars.',
+      });
+    }
     const currentPassword = String(req.body?.currentPassword || '');
     const newPassword = String(req.body?.newPassword || '');
     if (!currentPassword || !newPassword) {
@@ -86,6 +99,11 @@ router.post('/password', authMiddleware, async (req, res) => {
 
 router.post('/register', authMiddleware, async (req, res) => {
   try {
+    if (req.user.id === EMERGENCY_USER_ID) {
+      return res.status(403).json({
+        error: 'Creating users is disabled while EMERGENCY_BYPASS_DB is active.',
+      });
+    }
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Only an administrator can create accounts.' });
     }

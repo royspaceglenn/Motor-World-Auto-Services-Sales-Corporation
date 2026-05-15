@@ -43,6 +43,27 @@ Unset `DATABASE_URL` to use local SQLite again. To **move an existing** SQLite s
 5. **First login** (empty Neon DB): **Email** `admin@motorworldcorp.com`, **Password** `maoningpassword` — then use **Change password** in the app.
 6. **Cron** (optional): `vercel.json` schedules `GET /api/system/warm` every 5 minutes to nudge Neon; path must be **`warm`** not `warn`.
 
+### Emergency access when the database will not connect (Vercel)
+
+Use **only** until Neon is fixed, then **delete these variables** and redeploy.
+
+1. In Vercel → Environment Variables (Production), set:
+
+   | Name | Value |
+   |------|--------|
+   | `EMERGENCY_BYPASS_DB` | `true` |
+   | `EMERGENCY_STATIC_LOGIN` | `true` |
+   | `EMERGENCY_LOGIN_EMAIL` | Same email you will type on the login screen (e.g. `admin@motorworldcorp.com`) |
+   | `EMERGENCY_LOGIN_PASSWORD` | A **new long random password** you choose (stored in plain text in Vercel — HTTPS only; remove ASAP) |
+
+2. Keep **`JWT_SECRET`** and **`CORS_ORIGINS`** as they already are.
+
+3. You may **remove `DATABASE_URL`** temporarily while bypassing (the API will not contact Postgres). Restore it when Neon works.
+
+4. Redeploy. Sign in with **`EMERGENCY_LOGIN_EMAIL`** + **`EMERGENCY_LOGIN_PASSWORD`**. The app opens with **empty lists**; **writes are ignored** until bypass is off.
+
+5. **Turn off emergency mode** as soon as login works against the real DB: unset the four variables above, set `DATABASE_URL` again, redeploy.
+
 ## Authentication (browser / network exposure)
 
 By default the API **requires a JWT**: sign in through `POST /api/auth/login`, then send `Authorization: Bearer <token>` on requests. The web app stores the token and shows a **sign-in screen** until login succeeds.

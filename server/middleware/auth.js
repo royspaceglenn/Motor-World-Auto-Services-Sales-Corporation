@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { getPrimaryUserForSession, getUserById, mapUserToSession } from '../db/store.js';
+import { EMERGENCY_USER_ID } from '../lib/emergencyAuth.js';
 
 function readToken(req) {
   const header = req.headers.authorization || '';
@@ -24,6 +25,15 @@ export async function authMiddleware(req, res, next) {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
+    if (payload.emergency === true && payload.sub === EMERGENCY_USER_ID) {
+      req.user = {
+        id: payload.sub,
+        email: payload.email,
+        displayName: payload.displayName,
+        role: 'admin',
+      };
+      return next();
+    }
     const user = await getUserById(payload.sub);
     if (!user) return res.status(401).json({ error: 'Account no longer exists.' });
     req.user = mapUserToSession(user);

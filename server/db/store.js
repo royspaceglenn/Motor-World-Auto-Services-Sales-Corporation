@@ -8,6 +8,7 @@ import {
   SINGLE_ADMIN_USERNAME,
 } from '../lib/adminLogin.js';
 import * as collectionsBackend from './collectionsBackend.js';
+import { isEmergencyDbBypass } from '../lib/emergencyAuth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -102,6 +103,10 @@ export async function ensureStoreInitialized() {
 
 export async function initializeStore() {
   if (initialized) return;
+  if (isEmergencyDbBypass()) {
+    initialized = true;
+    return;
+  }
   /**
    * Only materialize `users` at startup. Every other collection is created lazily on first
    * `readCollection` (empty default), which avoids a long Postgres burst before `/api/auth/login`

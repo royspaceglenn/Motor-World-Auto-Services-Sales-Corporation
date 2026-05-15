@@ -10,6 +10,7 @@ dotenv.config({ quiet: true });
 let handler;
 
 function assertVercelHasPostgres() {
+  if (String(process.env.EMERGENCY_BYPASS_DB || '').trim().toLowerCase() === 'true') return;
   if (String(process.env.VERCEL || '').trim() !== '1') return;
   if (String(process.env.DATABASE_URL || '').trim()) return;
   throw new Error(

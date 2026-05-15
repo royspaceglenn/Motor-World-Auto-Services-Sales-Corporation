@@ -20,6 +20,7 @@ import paymentJournalRoutes from './routes/paymentJournal.js';
 import documentArchivesRoutes from './routes/documentArchives.js';
 import { warmDatabaseConnection } from './db/collectionsBackend.js';
 import { ensureStoreInitialized } from './db/store.js';
+import { isEmergencyDbBypass } from './lib/emergencyAuth.js';
 
 dotenv.config({ quiet: true });
 
@@ -75,6 +76,9 @@ app.get('/api/system/warm', handleDbWarm);
 app.get('/api/system/warn', handleDbWarm);
 
 app.use(async (req, res, next) => {
+  if (isEmergencyDbBypass()) {
+    return next();
+  }
   try {
     await ensureStoreInitialized();
     next();

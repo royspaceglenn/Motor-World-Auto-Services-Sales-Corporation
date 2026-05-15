@@ -27,4 +27,10 @@ export function assertProductionSafe() {
       '[motor-world] WARNING: ALLOW_UNAUTHENTICATED_API=true — any caller can impersonate the primary user. Never use on the public internet.'
     );
   }
+
+  if (String(process.env.EMERGENCY_BYPASS_DB || '').trim().toLowerCase() === 'true') {
+    console.warn(
+      '[motor-world] WARNING: EMERGENCY_BYPASS_DB=true — no Postgres/SQLite persistence; writes are dropped. Remove as soon as the database is healthy.'
+    );
+  }
 }

@@ -5,6 +5,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { isEmergencyDbBypass } from '../lib/emergencyAuth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -114,6 +115,7 @@ export function getCollectionsBackendMode() {
 }
 
 export async function initCollectionsBackend() {
+  if (isEmergencyDbBypass()) return;
   if (sqliteDb || pgPool || neonSql) return;
 
   if (process.env.DATABASE_URL?.trim()) {
@@ -132,6 +134,7 @@ export async function initCollectionsBackend() {
 
 /** Light DB touch for cron / warmup (connect + SELECT 1). Does not seed collections. */
 export async function warmDatabaseConnection() {
+  if (isEmergencyDbBypass()) return;
   await initCollectionsBackend();
   if (neonSql) {
     await neonSql`SELECT 1`;
@@ -207,6 +210,9 @@ async function upsertCollection(name, payload) {
 }
 
 export async function readCollection(name, fallback = []) {
+  if (isEmergencyDbBypass()) {
+    return structuredClone(fallback);
+  }
   await initCollectionsBackend();
   const row = await getCollectionRow(name);
   if (!row) {
@@ -222,11 +228,16 @@ export async function readCollection(name, fallback = []) {
 }
 
 export async function writeCollection(name, value) {
+  if (isEmergencyDbBypass()) {
+    console.warn('[motor-world] EMERGENCY_BYPASS_DB: write skipped for', name);
+    return;
+  }
   await initCollectionsBackend();
   await upsertCollection(name, value);
 }
 
 export async function seedEmptyCollections(collectionNames) {
+  if (isEmergencyDbBypass()) return;
   await initCollectionsBackend();
   await Promise.all(
     collectionNames.map(async (name) => {
