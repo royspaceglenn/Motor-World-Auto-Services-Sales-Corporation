@@ -21,11 +21,12 @@ import documentArchivesRoutes from './routes/documentArchives.js';
 import { warmDatabaseConnection } from './db/collectionsBackend.js';
 import { ensureStoreInitialized } from './db/store.js';
 import { isEmergencyDbBypass } from './lib/emergencyAuth.js';
+import { getWebOriginsRaw } from './lib/secrets.js';
 
 dotenv.config({ quiet: true });
 
 function buildCorsOptions() {
-  const raw = String(process.env.CORS_ORIGINS || '').trim();
+  const raw = getWebOriginsRaw();
   const isProd = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
   if (!raw) {
     if (isProd) {

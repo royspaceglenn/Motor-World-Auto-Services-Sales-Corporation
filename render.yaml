@@ -1,7 +1,8 @@
 # Render Blueprint — Motor World API (Express + SQLite)
 # https://render.com/docs/blueprint-spec
 #
-# After deploy: set CORS_ORIGINS to your Vercel URL(s).
+# After deploy: set MOTOR_WORLD_ORIGINS to your Vercel / custom-domain URL(s).
+# Legacy names still work: CORS_ORIGINS, JWT_SECRET.
 # For durable SQLite, add a Disk in the Render dashboard, mount at /data, then set:
 #   SQLITE_DB_PATH=/data/motorworld.sqlite
 
@@ -19,7 +20,7 @@ services:
         value: production
       - key: TRUST_PROXY
         value: "1"
-      - key: JWT_SECRET
+      - key: MOTOR_WORLD_APP_SECRET
         sync: false
-      - key: CORS_ORIGINS
+      - key: MOTOR_WORLD_ORIGINS
         sync: false

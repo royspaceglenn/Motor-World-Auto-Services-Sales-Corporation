@@ -4,11 +4,9 @@ Admin workspace for **Motor World Auto Services & Sales Corporation**: inventory
 
 ## Start here after a full reset
 
-If you wiped **GitHub, Neon, and Vercel** and want a clean setup, follow:
+**[deploy/STEP_BY_STEP_WEB.md](deploy/STEP_BY_STEP_WEB.md)** — GitHub → Render (API) → Vercel (site) → your domain. You mainly set **`MOTOR_WORLD_APP_SECRET`**, **`MOTOR_WORLD_ORIGINS`**, and **`VITE_API_BASE_URL`**.
 
-**[docs/SETUP_FROM_ZERO.md](docs/SETUP_FROM_ZERO.md)**
-
-**Recommended path:** host the **website on Vercel** (static Vite build) and the **API on Render** with **SQLite** so you avoid serverless + cold database issues. Alternative: all-in-one on **Vercel + Neon** (see the same doc, Option B).
+Shorter index: **[docs/SETUP_FROM_ZERO.md](docs/SETUP_FROM_ZERO.md)** (links to the deploy guide and the Vercel+Neon alternative).
 
 ## Run locally
 
@@ -41,4 +39,4 @@ API defaults to port **3001**; Vite UI uses the port in `package.json` / `.env` 
 
 ---
 
-*For deployment environment tables (JWT, CORS, Neon, emergency bypass), see **server/README.md** and **docs/SETUP_FROM_ZERO.md**.*
+*For deployment details (secrets, origins, Neon, emergency bypass), see **server/README.md**.*

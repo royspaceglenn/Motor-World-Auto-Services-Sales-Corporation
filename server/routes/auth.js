@@ -7,6 +7,7 @@ import { createUser, getUserByEmail, getUserById, mapUserToSession, updateUser }
 import { logActivity } from '../services/activityLogger.js';
 import { normalizeLocalLogin } from '../lib/adminLogin.js';
 import { EMERGENCY_USER_ID, tryEmergencyStaticCredentials } from '../lib/emergencyAuth.js';
+import { getAppSigningSecretForTokens } from '../lib/secrets.js';
 
 const router = express.Router();
 
@@ -27,7 +28,7 @@ function signToken(user, { emergency = false } = {}) {
     displayName: session.displayName,
   };
   if (emergency) body.emergency = true;
-  return jwt.sign(body, process.env.JWT_SECRET || 'dev-secret', { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+  return jwt.sign(body, getAppSigningSecretForTokens(), { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
 }
 
 router.post('/login', loginLimiter, async (req, res) => {

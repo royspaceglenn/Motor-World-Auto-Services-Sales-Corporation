@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { getPrimaryUserForSession, getUserById, mapUserToSession } from '../db/store.js';
 import { EMERGENCY_USER_ID } from '../lib/emergencyAuth.js';
+import { getAppSigningSecretForTokens } from '../lib/secrets.js';
 
 function readToken(req) {
   const header = req.headers.authorization || '';
@@ -24,7 +25,7 @@ export async function authMiddleware(req, res, next) {
   }
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
+    const payload = jwt.verify(token, getAppSigningSecretForTokens());
     if (payload.emergency === true && payload.sub === EMERGENCY_USER_ID) {
       req.user = {
         id: payload.sub,

@@ -1,6 +1,6 @@
 # Motor World Auto Services & Sales Corporation — Backend
 
-**New install or redeploy?** Read the repo root **[docs/SETUP_FROM_ZERO.md](../docs/SETUP_FROM_ZERO.md)** first (Vercel + Render split vs Vercel + Neon).
+**New install or redeploy?** Start with **[deploy/STEP_BY_STEP_WEB.md](../deploy/STEP_BY_STEP_WEB.md)** (or the short pointer **[docs/SETUP_FROM_ZERO.md](../docs/SETUP_FROM_ZERO.md)**).
 
 Express API for the **Motor World Auto Services & Sales Corporation** admin desktop and browser app.
 
@@ -37,8 +37,8 @@ Unset `DATABASE_URL` to use local SQLite again. To **move an existing** SQLite s
    | Name | Value |
    |------|--------|
    | `DATABASE_URL` | Full Neon Postgres URL |
-   | `JWT_SECRET` | Random string **≥ 32 characters** (e.g. `openssl rand -hex 32`) — not `dev-secret` |
-   | `CORS_ORIGINS` | Your site origin(s), comma-separated, e.g. `https://motor-world-auto-services-sales-cor.vercel.app` |
+   | `MOTOR_WORLD_APP_SECRET` | Random string **≥ 32 characters** (e.g. `openssl rand -hex 32`) — not `dev-secret` (alias: `JWT_SECRET`) |
+   | `MOTOR_WORLD_ORIGINS` | Your site origin(s), comma-separated, e.g. `https://your-app.vercel.app` (alias: `CORS_ORIGINS`) |
    | `NODE_ENV` | `production` |
 
 4. **Redeploy** after saving env vars. On Vercel the API uses **Neon’s serverless driver** (HTTP), not TCP `pg`, so login should respond without multi‑minute cold hangs.
@@ -58,7 +58,7 @@ Use **only** until Neon is fixed, then **delete these variables** and redeploy.
    | `EMERGENCY_LOGIN_EMAIL` | Same email you will type on the login screen (e.g. `admin@motorworldcorp.com`) |
    | `EMERGENCY_LOGIN_PASSWORD` | A **new long random password** you choose (stored in plain text in Vercel — HTTPS only; remove ASAP) |
 
-2. Keep **`JWT_SECRET`** and **`CORS_ORIGINS`** as they already are.
+2. Keep **`MOTOR_WORLD_APP_SECRET`** and **`MOTOR_WORLD_ORIGINS`** (or legacy **`JWT_SECRET`** / **`CORS_ORIGINS`**) as they already are.
 
 3. You may **remove `DATABASE_URL`** temporarily while bypassing (the API will not contact Postgres). Restore it when Neon works.
 
@@ -76,15 +76,15 @@ For trusted **local-only** workflows (e.g. legacy desktop), you can opt back int
 ALLOW_UNAUTHENTICATED_API=true
 ```
 
-Keep `JWT_SECRET` strong and unique in production; do **not** commit real secrets.
+Keep **`MOTOR_WORLD_APP_SECRET`** strong and unique in production; do **not** commit real secrets.
 
 ### Required when `NODE_ENV=production`
 
 The server **refuses to start** unless:
 
-1. **`JWT_SECRET`** is set to a random value **at least 32 characters** (not `dev-secret`, `change-me`, etc.).
-2. **`CORS_ORIGINS`** lists every HTTPS origin that may call the API, comma-separated, e.g.  
-   `CORS_ORIGINS=https://app.yourdomain.com,https://www.yourdomain.com`
+1. **`MOTOR_WORLD_APP_SECRET`** (or legacy `JWT_SECRET`) is a random value **at least 32 characters** (not `dev-secret`, `change-me`, etc.).
+2. **`MOTOR_WORLD_ORIGINS`** (or legacy `CORS_ORIGINS`) lists every HTTPS origin that may call the API, comma-separated, e.g.  
+   `MOTOR_WORLD_ORIGINS=https://app.yourdomain.com,https://www.yourdomain.com`
 
 Optional:
 
